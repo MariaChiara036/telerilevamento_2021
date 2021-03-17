@@ -14,4 +14,13 @@ min values : 4.070954e-03, 8.173777e-03, 4.615846e-03, 1.300000e-02, 4.567942e-0
 max values :   0.08496003,   0.17020000,   0.21908860,   0.54999932,   0.45184137, 305.20000000,   0.49681378 
 plot(p224r63)
 #inserimento immagine satellitare
+#colour change
+cl<-colorRampPalette(c("black", "grey", "light grey"))(100)
+plot(p224r63, col=cl)
+#ricarico l'immagine con la palette da me scelta, la funzione plot possiede due argomenti: l'immagine e i colori che sono dettati dalla funzione precedente
+#colour change -> new
+cl<-colorRampPalette(c("black", "yellow", "blue", "aquamarine"))(100)
+plot(p224r63, col=cl)
+
+
 
