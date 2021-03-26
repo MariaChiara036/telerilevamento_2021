@@ -65,6 +65,32 @@ clnir <- colorRampPalette(c("red","orange","yellow")) (100)
 plot(p224r63$B4_sre, col=clnir)
 #palette per il vicino infrarosso individuata con clnir
 #col comando plot mi carica ogni volta ciò che io ho impostato
-
-
+plotRGB(p224r63, r=3, g=2, b=1, stretch="Lin")
+#visualizzazione colori naturali, fuzione stretch per "distendere" le bande
+plotRGB(p224r63,4,3,2, stretch="Lin")
+#plot cambiando le bande, montate le bande infrarosso vicino, la verde e la rossa
+#l'ordine è importante perchè ogni numero individua le bande red green blue
+plotRGB(p224r63,3,4,2, stretch="Lin")= plotRGB(p224r63, r=3, g=4, b=2, stretch="Lin")
+par(mfrow=c(2,2))
+#multiframe 2x2
+plotRGB(p224r63,3,2,4, stretch="Lin")
+plotRGB(p224r63,3,4,2, stretch="Lin")
+plotRGB(p224r63,4,3,2, stretch="Lin")
+plotRGB(p224r63, r=3, g=2, b=1, stretch="Lin")
+ pdf("pdf_giusto")
+#salvo un pdf del mio grafico su R e viene salvato direttamente nella cartella lab che è la mia working directory
+par(mfrow=c(2,2))
+plotRGB(p224r63, r=3, g=2, b=1, stretch="Lin")
+plotRGB(p224r63,4,3,2, stretch="Lin")
+plotRGB(p224r63,3,4,2, stretch="Lin")
+plotRGB(p224r63,3,2,4, stretch="Lin")
+dev.off()
+#elimino la precedente finestra grafica e ripulisco per creare nuovi plot da zero
+par(mfrow=c(3,1))
+plotRGB(p224r63, r=3, g=2, b=1, stretch="Lin")
+plotRGB(p224r63,3,4,2, stretch="Lin")
+plotRGB(p224r63,3,4,2, stretch="hist")
+#funzione hist mi riporta colori falsati
+install.packages("RStoolbox")
+library(RStoolbox)
 
