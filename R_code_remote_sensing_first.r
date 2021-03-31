@@ -93,4 +93,29 @@ plotRGB(p224r63,3,4,2, stretch="hist")
 #funzione hist mi riporta colori falsati
 install.packages("RStoolbox")
 library(RStoolbox)
+#installata la libreria RStoolbox
+#richiamo la libreria raster e carico immagine p224r63_1988
+library(raster)
+setwd("C:/lab/")
+p224r63_1988<-brick("p224r63_1988_masked.grd")
+plot(p224r63_1988)
+plotRGB(p224r63_1988, r=3, g=2, b=1, stretch="Lin")
+#plottato questa immagine dando queste bande da visualizzare
+plotRGB(p224r63_1988, r=4, g=3, b=2, stretch="Lin")
+#qui vedo anche una banda dell'infrarosso(b4)
+p224r63_2011<-brick("p224r63_2011_masked.grd")
+par(mfrow=c(2,1))
+plotRGB(p224r63_1988, r=4, g=3, b=2, stretch="Lin")
+plotRGB(p224r63_2011, r=4, g=3, b=2, stretch="Lin")
+#multiframe per le due immagini di Landsat
+par(mfrow=c(2,2))
+pdf("multitemp.pdf")
+plotRGB(p224r63_1988,r=4, g=3, b=2, stretch="Lin")
+plotRGB(p224r63_2011,r=4, g=3, b=2, stretch="Lin")
+plotRGB(p224r63_1988,r=4, g=3, b=2, stretch="hist")
+plotRGB(p224r63_2011,r=4, g=3, b=2, stretch="hist")
+dev.off()
+#salvato il pdf e ripulito finestra grafica
+
+
 
