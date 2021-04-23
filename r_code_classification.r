@@ -16,3 +16,12 @@ plot(solare$map)
 sun<-brick("Solar_Orbiter_s_high-resolution_view_of_the_Sun.png")
 sun1<-unsuperClass(sun,nClasses=10)
 plot(sun1$map)
+gc<-brick("dolansprings_oli_2013088_canyon_lrg.jpg")
+#caricamento immagine satellitare Gran Canyon
+plotRGB(gc, r=1, g=2, b=3, stretch="Lin")
+plotRGB(gc, r=1, g=2, b=3, stretch="hist")
+gcc2<-unsuperClass(gc, nClasses=2)
+plot(gcc2$map)
+#plot mappa classi 2
+gcc4<-unsuperClass(gc, ncClasses=4)
+plot(gcc4$map)
