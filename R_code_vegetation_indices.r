@@ -38,6 +38,16 @@ plot(vi, col=cl)
 difdiv<-dvi1-dvi2
 cld <- colorRampPalette(c('blue','white','red'))(100)
 plot(difndvi, col=cld)
+#pacchetto rasterdiv
+install.packages("rasterdiv")
+library(rasterdiv)
+plot(copNDVI)
+copNDVI <- reclassify(copNDVI, cbind(253:255, NA))
+plot(copNDVI)
+library(rasterVis)
+levelplot(copNDVI)
+#livelli alti in punti dove abbondano foreste, valori bassi su deserti
+#aria carica di vapore fa tornare acqua sulle chiome, aria scaricata da vapore acqueo è secca e si riversa verso terra in un'altra zona
 
 
 
