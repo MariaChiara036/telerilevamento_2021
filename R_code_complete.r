@@ -6,7 +6,7 @@
 #4.Knitr
 #5.Multivariate analysis
 #6.Classification
-#7.Land cover
+#7.Land cover and ggplot
 #8.Vegetation indices
 #9.Variability
 #10.Spectral signature
