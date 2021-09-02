@@ -10,6 +10,7 @@ cl <- colorRampPalette(c('light blue','green','red','yellow'))(100)
 #scelti i colori
 plot(vegetation, col=cl)
 #resampling
+#ricampionamento dei pixel per rendere l'immagine più leggera così da velocizzare le operazioni su R
 veget<-aggregate(vegetation, fact=100)
 #cambio la visualizzazione dell'insieme di pixel, livelli di pixel
 plot(veget, col=cl)
