@@ -1,4 +1,9 @@
+#Deforestazione del Parco Nazionale dell'Iguazù
+#Viene eseguita un'analisi delle condizioni pre deforestazione partendo da un'immagine del 1973 catturata da Landsat 1 e confrontandosi successivamente con l'immagine
+#del 2011 catturata da Landsat 5, dove il paesaggio è cambiato notevolemente
 
+#CODICE......................................................................
+#Il primo step su R è richiamare i pacchetti necessari per svolgere le analisi
 #pacchetto attraverso cui è possibile eseguire le funzioni base di R come calcolare o analizzare dati, sia Raster che vettoriali.
 library(raster)
 #pacchetto RStoolbox permette di eseguire plot come levelplot e indagare la variabilità dei dati
@@ -29,7 +34,9 @@ diff<-TGr$igu_2011-TGr$igu_1973
 diff
 #eseguo un levelplot della differenza ottenuta, confrontando così le differenze tra le due immagini
 levelplot(diff)
+
 #spectralIndices..................................................
+
 #immagine 1973
 #tramite la funzione spectralIndices R mi calcola tutti gli indici possibili ottenibili dalle bande che io inserisco per la mia immagine
 vi<-spectralIndices(igu73,green=1,nir=2,red=3)
@@ -43,7 +50,9 @@ plot(vi2$NDVI)
 #eseguo la differenza tra l'NDVI dell'anno 1973 e l'NDVI dell'anno 2011
 diffndvi<-vi$NDVI-vi2$NDVI
 plot(diffndvi)
+
 #land cover..................................................................
+
 #studio la copertura del suolo tramite la classificazione non supervisionata che mi classifica i pixel dell'immagine raggruppano insieme quelli che sono più simili tra loro.
 Il fatto che sia non supervisionata significa che il training set è scelto in modo random da R
 #scelto quante classi usare per la classificazione utilizzando la funzione "unsuperClass"
@@ -75,6 +84,7 @@ freq(iguunsup2$map)
 [3,]     3  59893
 #somma dei pixel
 s2<-273745+444362+59893
+#proporzioni per arrivare al valore percentuale di ogni classe 
 prop2<-freq(iguunsup2$map)/s2
 prop2
     value      count
@@ -83,9 +93,12 @@ prop2
 [3,] 3.856041e-06 0.07698329 #8 classe 3 in verde nel grafico, rappresenta la porzione di suolo che è coperto da acqua
 
 #frequenze
+# nomino le classi di copertura
 cover<-c("Forest", "Agriculture","Water")
+#fisso i valori di percentuali di ogni classe e attribuisco un nome
 percentages_73<-c(0.72,0.21,0.06)
 percentages_11<-c(0.56,0.35,0.07)
+#creo un dataframe, ossia una tabella dove i valori corrispondono alle 3 classi di copertura
 percentages<-data.frame(cover, percentages_73,percentages_11)
 percentages
         cover percentages_73 percentages_11
@@ -93,61 +106,11 @@ percentages
 2 Agriculture           0.21           0.35
 3       Water           0.06           0.07
 
-
+#restituisco graficamente il dataframe tramite ggplot, creando un istogramma
 ggplot(percentages,aes(x=cover,y=percentages_73,color=cover))+geom_bar(stat="identity", fill="white")
 ggplot(percentages,aes(x=cover,y=percentages_11,color=cover))+geom_bar(stat="identity", fill="white")
+#attribuisco un nome più semplice ai due istogrammi appena creati
 p1<-ggplot(percentages,aes(x=cover,y=percentages_73,color=cover))+geom_bar(stat="identity", fill="white")
 p2<-ggplot(percentages,aes(x=cover,y=percentages_11,color=cover))+geom_bar(stat="identity", fill="white")
+#tramite la funzione grid.arrange creo un grafico unendo i due istogrammi
 grid.arrange(p1, p2, nrow=1) 
-#variability................................................................
-PCA
-igu73PCA<-rasterPCA(igu73)
-> plot(igu73PCA$map)
-> summary(igu73PCA$map)
-              [,1]         [,2]          [,3] [,4]
-Min.    -100.25236 -197.3488506 -156.42422191    0
-1st Qu.  -50.55716  -15.3724972   -8.43402977    0
-Median   -26.89495   -0.4147669   -0.05395766    0
-3rd Qu.   31.41929   15.6675196    8.46655105    0
-Max.     276.67418  137.0068594  114.11686649    0
-NA's       0.00000    0.0000000    0.00000000    0
-summary(igu73PCA$model)
-Importance of components:
-                           Comp.1     Comp.2      Comp.3 Comp.4
-Standard deviation     72.6780720 35.6010851 14.32043804      0
-Proportion of Variance  0.7819991  0.1876402  0.03036072      0 prima comp 78%, seconda 19%,terza 3%, quarta 0.
-Cumulative Proportion   0.7819991  0.9696393  1.00000000      1
-
-igu11PCA<-rasterPCA(igu11)
-summary(igu11PCA$model)
-Importance of components:
-                           Comp.1     Comp.2     Comp.3 Comp.4
-Standard deviation     86.0786339 62.6616126 13.4483248      0
-Proportion of Variance  0.6433635  0.3409328  0.0157037      0 prima comp 64%, 34%,0,15%, 0.
-Cumulative Proportion   0.6433635  0.9842963  1.0000000      1
-plot(igu11PCA$map)
-pc1<-igu73PCA$map$PC1
-#dev standard per ogni variabilità ecologica
-pc1sd<-focal(pc1, w=matrix(1/9, nrow=3,ncol=3), fun=sd)
-clsd <- colorRampPalette(c('blue','green','pink','magenta','orange','brown','red','yellow'))(100)
-plot(pc1sd,col=clsd)
-#ggplot della dev standard della pc1
-ggplot()+ geom_raster(pc1sd, mapping = aes(x = x, y = y, fill = layer))+scale_fill_viridis(option="magma")
-#come sopra con scala colori viridis
-ggplot() +
-geom_raster(pc1sd, mapping = aes(x = x, y = y, fill = layer)) +
-scale_fill_viridis()  +
-ggtitle("Standard deviation of PC1") 
-# plot della dev stan con una determinata scala di colori
-p1<-ggplot() +
-geom_raster(pc1sd, mapping = aes(x = x, y = y, fill = layer)) +
-scale_fill_viridis(option="inferno")  +
-ggtitle("Standard deviation of PC1")
-#plot con un'altra scala
-p2<-ggplot() +
-geom_raster(pc1sd, mapping = aes(x = x, y = y, fill = layer)) +
-scale_fill_viridis(option="cividis")  +
-ggtitle("Standard deviation of PC1 by viridis colour scale")
-grid.arrange(p1, p2, nrow = 1)
- 
-pairs(igu73)
