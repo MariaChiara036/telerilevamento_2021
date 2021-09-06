@@ -15,10 +15,10 @@ library(rasterVis)
 #pacchetto ggplot è molto utile per fare plot personalizzati e complessi 
 library(ggplot2)
 
-#inserisco l'immagine su R come rasterLayer
-igu73<-raster("igu_1973.png")
-#inserisco l'immagine su R come rasterLayer
-igu11<-raster("igu_2011.png")
+#inserisco l'immagine su R come rasterBrick
+igu73<-brick("igu_1973.png")
+#inserisco l'immagine su R come rasterBrick
+igu11<-brick("igu_2011.png")
 #creo una lista contente le due immagini precedentemente caricate, R raccoglie dalla mia working directory tutti quei file che hanno come pattern comune "igu"
 iguaz<-list.files(pattern="igu")
 #applico alla mia lista la funzione raster
@@ -29,11 +29,6 @@ import[[1]]<- crop(import[[1]], extent(extent(import[[2]])))
 TGr<-stack(import)
 #uso la funzione levelplot
 levelplot(TGr, main="Deforestation in Iguazù National Park", names.attr=c("1973","2011"))
-#eseguo la differenza tra le due immagini estrapolandole dal TGr tramite l'operatore "$"
-diff<-TGr$igu_2011-TGr$igu_1973
-diff
-#eseguo un levelplot della differenza ottenuta, confrontando così le differenze tra le due immagini
-levelplot(diff)
 
 #spectralIndices..................................................
 
@@ -42,14 +37,11 @@ levelplot(diff)
 vi<-spectralIndices(igu73,green=1,nir=2,red=3)
 plot(vi)
 #plotto di tutti i miei indici in particolare l'NDVI
-plot(vi$NDVI)
+plot(vi$NDVI,main="NDVI 1973")
 #immagine 2011
 vi2<-spectralIndices(igu11,swir2=1,nir=2,red=3)
 plot(vi2)
-plot(vi2$NDVI)
-#eseguo la differenza tra l'NDVI dell'anno 1973 e l'NDVI dell'anno 2011
-diffndvi<-vi$NDVI-vi2$NDVI
-plot(diffndvi)
+plot(vi2$NDVI,main="NDVI 2011")
 
 #land cover..................................................................
 
@@ -107,10 +99,10 @@ percentages
 3       Water           0.06           0.07
 
 #restituisco graficamente il dataframe tramite ggplot, creando un istogramma
-ggplot(percentages,aes(x=cover,y=percentages_73,color=cover))+geom_bar(stat="identity", fill="white")
-ggplot(percentages,aes(x=cover,y=percentages_11,color=cover))+geom_bar(stat="identity", fill="white")
+ggplot(percentages,aes(x=cover,y=percentages_73,color=cover))+geom_bar(stat="identity", fill="white")+ylim(0,0.8)
+ggplot(percentages,aes(x=cover,y=percentages_11,color=cover))+geom_bar(stat="identity", fill="white")+ylim(0,0.8)
 #attribuisco un nome più semplice ai due istogrammi appena creati
-p1<-ggplot(percentages,aes(x=cover,y=percentages_73,color=cover))+geom_bar(stat="identity", fill="white")
-p2<-ggplot(percentages,aes(x=cover,y=percentages_11,color=cover))+geom_bar(stat="identity", fill="white")
+p1<-ggplot(percentages,aes(x=cover,y=percentages_73,color=cover))+geom_bar(stat="identity", fill="white")+ ylim(0,0.8)
+p2<-ggplot(percentages,aes(x=cover,y=percentages_11,color=cover))+geom_bar(stat="identity", fill="white")+ylim(0,0.8)
 #tramite la funzione grid.arrange creo un grafico unendo i due istogrammi
 grid.arrange(p1, p2, nrow=1) 
