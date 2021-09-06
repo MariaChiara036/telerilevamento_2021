@@ -1,131 +1,166 @@
-#Deforestation in Spiny Thicket in Madagascar
-#1.Time series
-#2.Land cover
-#3.NDVI
-setwd("C:/lab/")
+#Deforestazione del Parco Nazionale dell'Iguazù
+#Viene eseguita un'analisi delle condizioni pre deforestazione partendo da un'immagine del 1973 catturata da Landsat 1 e confrontandosi successivamente con l'immagine
+#del 2011 catturata da Landsat 5, dove il paesaggio è cambiato notevolemente
+
+#CODICE......................................................................
+#Il primo step su R è richiamare i pacchetti necessari per svolgere le analisi
+#pacchetto attraverso cui è possibile eseguire le funzioni base di R come calcolare o analizzare dati, sia Raster che vettoriali.
 library(raster)
-library(rasterVis)
+#pacchetto RStoolbox permette di eseguire plot come levelplot e indagare la variabilità dei dati
+library(RStoolbox)
+#pacchetto gridExtra
 library(gridExtra)
-libarary(ggplot2)
-#installo i pacchetti che mi permetteranno di utilizzare le varie funzioni
-f1973<-raster("forest1973.png")
-f1998<-raster("forest1998.png")
-f2021<-raster("forest2021.png")
-#importato le immagini satellitari necessarie su R
-f1973<-brick("forest1973.png")
-f1998<-brick("forest1998.png")
-f2021<-brick("forest2021.png")
+#pacchetto rasterVis permette
+library(rasterVis)
+#pacchetto ggplot è molto utile per fare plot personalizzati e complessi 
+library(ggplot2)
 
+#inserisco l'immagine su R come rasterBrick
+igu73<-brick("igu_1973.png")
+#inserisco l'immagine su R come rasterBrick
+igu11<-brick("igu_2011.png")
+#correzione extent
+igu73<-crop(igu73,igu11)
+#funzione par mi permette di plottare più immagini contemporaneamente scegliendo come disporle in base al numero di righe e di colonne da me scelto
+par(mfrow=c(1,2))
+#plot in RGB, ossia inserendo dei canali di colore rosso, verde e blu le bande delle mie immagini, in più la particolarità dello stretch mi discrimina meglio le differenze tra i pixel
+plotRGB(igu73,2,3,1,stretch="lin")
+plotRGB(igu11,1,2,3,stretch="lin")
 
-#1.TIME SERIES...................................................................................
-#creo una lista contente le 3 immagini usato un pattern comune a tutte, che in questo caso è "forest"
-forest<-list.files(pattern="forest")
-forest
-#[1] "forest1973.png" "forest1998.png" "forest2021.png"
-#importo con funzione l apply la lista forst su raster, lapplymi fa applicare funzione raster a tutta la lista forest
-import<-lapply(forest,raster)
-#taglio le immagini 1998 e 2021 con l'estensione della 1973 per farle apparire tutte con la stessa extent
-#PRIMO TENTATIVO DI RITAGLIO DI IMMAGINI
-#f1998_2 <- crop(f1998, extent(f1973))
-#f2021_2 <- crop(f2021, extent(f1973))
-#definisco le sottosezioni di import in modo da avere le stesse extent su tutte e 3 e usare un unico argomento che è import
-import[[2]] <- crop(import[[2]], extent(extent(import[[1]])))
-import[[3]] <- crop(import[[3]], extent(extent(import[[1]])))
-import
-#uso funzione stack che mi crea un oggetto singolo che mi sovrappone tutte e 3 le immagini
-Tgr<-stack(import)
-# plot dell'oggetto che rappresenta tutte le immagini sovrapposte
-plot(Tgr)
-plotRGB(TGr,1,2,3, stretch="Lin")
-plotRGB?? plotRGB(f1973,r=1,g=2,b=3,stretch="lin")
-plotRGB(f1998,r=1,g=2,b=3,stretch="lin")
-plotRGB(f2021,r=1,g=2,b=3,stretch="lin")
+#TIME SERIES...................................................................................
+#creo una lista di files contente le due immagini così da applicare le funzioni in modo univoco direttamente sulla lista
+#creo una lista contente le due immagini precedentemente caricate, R raccoglie dalla mia working directory tutti quei file che hanno come pattern comune "igu"
+iguaz<-list.files(pattern="igu")
+##applico alla mia lista la funzione raster tramite la funzione lapply
+import<- lapply(iguaz, raster)
+#correzione extent così le immagini hanno la stessa estensione
+import[[1]]<- crop(import[[1]], extent(extent(import[[2]])))
+#faccio uno stack di quello che ho ottenuto precedentemente
+TGr<-stack(import)
+#uso la funzione levelplot
+levelplot(TGr, main="Deforestation in Iguazù National Park", names.attr=c("1973","2011"))
 
-#2.LAND COVER .....................................................................................
-#2.1Unsuperclass
-#creo una visuale dell'immagine del 1973 dividendo i pixel in 3 macroclassi con la funzione unsuperclass, classificazione non supervisionata
-forunsup<-unsuperClass(f1973,nClasses=3)
-plot(forunsup$map)
-#faccio la medesima cosa per l'immagine del 1998
-forunsup1998<-unsuperClass(f1998, nClasses=3)
-plot(forunsup1998$map)
-#idem per il 2021
-forunsup20213<-unsuperClass(f2021,nClasses=3)
-plot(forunsup20213$map)
+#PCA/VARIABILITY...............................................................................
+#con la funzione rasterPCA eseguo una analisi delle componenti principali dell'immagine del 1973
+igu73PCA<-rasterPCA(igu73)
+#carico il modello della PCA, estrapolato dalla PCA appena prodotta
+summary(igu73PCA$model)
+#Importance of components:
+                           #Comp.1     Comp.2      Comp.3 Comp.4
+#Standard deviation     72.6780720 35.6010851 14.32043804      0
+#Proportion of Variance  0.7819991  0.1876402  0.03036072      0 prima comp 78%, seconda 19%,terza 3%, quarta 0.
+#Cumulative Proportion   0.7819991  0.9696393  1.00000000      1
+#plot delle 4 componenti principali dell'immagine del 1973
+plot(igu73PCA$map)
+#semplifico dando alla prima componente un nome più veloce
+pc1<-igu73PCA$map$PC1
+#calcolo deviazione standard della prima componente, che in questo caso è quella che meglio descrive la variabilità dell'immagine.
+#La deviazione standard indagare ulterioremente la variabilità, in questo caso la variabilità della PC1
+#funzione focal permette di fare svariate statistiche, in questo caso viene calcolata la dev. standard. Il calcolo è effettuato su una matrice di 9 pixel totali
+pc1sd<-focal(pc1, w=matrix(1/9, nrow=3,ncol=3), fun=sd)
+#creo una palette di colori per il plot successivo
+clsd <- colorRampPalette(c('blue','green','pink','magenta',
+'orange','brown','red','yellow'))(100)
+#plot della deviazione standard della PC1
+plot(pc1sd,col=clsd)
+#ggplot della dev.standard della PC1 usando la scala di colori viridis
+ggplot()+ geom_raster(pc1sd, mapping = aes(x = x, y = y,
+fill = layer))+scale_fill_viridis(option="magma")
+#rasterPCA della seconda immagine
+igu11PCA<-rasterPCA(igu11)
+#modello di PCA 
+summary(igu11PCA$model)
+#Importance of components:
+                           #Comp.1     Comp.2     Comp.3 Comp.4
+#Standard deviation     86.0786339 62.6616126 13.4483248      0
+#Proportion of Variance  0.6433635  0.3409328  0.0157037      0 prima comp 64%, 34%,0,15%, 0.
+#Cumulative Proportion   0.6433635  0.9842963  1.0000000      1
+#plot delle quattro componenti dell'immagine
+plot(igu11PCA$map)
+#semplifico dando un nome più veloce alla prima componente
+pc1.<-igu11PCA$map$PC1
+#calcolo deviazione standard della prima componente che in questo caso è la componente che più descrive la variabilità dell'immagine
+#la deviazione standard in questo caso esalterà le differenze, anche in questo caso la matrice di pixel è di 9
+pc1.sd<-focal(pc1., w=matrix(1/9, nrow=3,ncol=3), fun=sd)
+#plot della deviazione standar della prima componente con la palette utilizzata per la deviazione standard del 1973
+plot(pc1.sd,col=clsd)
+#ggplot della dev.standard della PC1 con scala di colori viridis
+ggplot()+ geom_raster(pc1.sd, mapping = aes(x = x, y = y, 
+fill = layer))+scale_fill_viridis(option="magma")
 
-#2.2Frequenze..........................................................................................
-#creo le frequenze delle immagini create prima tramite unsuperclass così posso verificare la dimensione dei pixel per ogni classe
-freq(forunsup$map)
+#NDVI................................................................................
+
+#immagine 1973
+#tramite la funzione spectralIndices R mi calcola tutti gli indici possibili ottenibili dalle bande che io inserisco per la mia immagine
+vi<-spectralIndices(igu73,green=1,nir=2,red=3)
+#plot di tutti gli indici
+plot(vi)
+#eseguo il plot in particolare solo dell'NDVI, estrapolandolo dall'argomento "vi"
+plot(vi$NDVI,main="NDVI 1973")
+#immagine 2011
+#ripeto l'operazione eseguendo la funzione spectralIndices anche sull'immagine del 2011
+vi2<-spectralIndices(igu11,swir2=1,nir=2,red=3)
+#plot di tutti gli indici possibili
+plot(vi2)
+#eseguo il plot in particolare solo dell'NDVI, estrapolandolo dall'argomento "vi2"
+plot(vi2$NDVI,main="NDVI 2011")
+
+#LAND COVER..............................................................................
+
+#studio la copertura del suolo tramite la classificazione non supervisionata che mi classifica i pixel dell'immagine raggruppano insieme quelli che sono più simili tra loro.
+Il fatto che sia non supervisionata significa che il training set è scelto in modo random da R
+#scelto quante classi usare per la classificazione utilizzando la funzione "unsuperClass"
+iguunsup1<-unsuperClass(igu73,nClasses=3)
+#plotto la mia immagine classificata aggiungendo un titolo
+plot(iguunsup1$map,main="1973")
+# calcolo le frequenza, ossia la percentuale dei pixel per ogni classe
+req(iguunsup1$map)
      value  count
-[1,]     1  34180 # classe 1 acque
-[2,]     2 722963 # classe 2 foreste
-[3,]     3 153857 #classe 3 coltivi
-> s1<-34180+722963+153857
-> s1
-[1] 911000 #somma tot pixel
-#creo le proporzioni per assegnare le percentuali ad ogni classe
-> prop1<-freq(forunsup$map)/s1
-> prop1
+[1,]     1 576140
+[2,]     2 162311
+[3,]     3  39549
+s1<-576140+162311+39549
+prop1<-freq(iguunsup1$map)/s1
+prop1
             value      count
-[1,] 1.097695e-06 0.03751921 #4% acque bianco 
-[2,] 2.195390e-06 0.79359276 #79% foresta giallo 
-[3,] 3.293085e-06 0.16888804 #17% coltivi, formaz erbose verde
-#frequenze per l'immagine del 1998 con le modalità usate per l'immagine del 1973
-freq(forunsup1998$map)
-     value  count
-[1,]     1 272130 # classe 1 coltivi bianco
-[2,]     2  29277 #classe 2 acqua giallo
-[3,]     3 610593 #classe 3 foresta verde
-s2<-272130+29277+610593
-s2
-[1] 912000 #tot pixel
-#proporzioni per creare le percentuali anche per l'immagine del 1998
-prop2<-freq(forunsup1998$map)/s2
+[1,] 1.285347e-06 0.74053985 #74 foresta bianco classe 1 in bianco nel grafico, rappresenta la porzione di suolo che è coperto da foresta
+[2,] 2.570694e-06 0.20862596 #21 coltivi giallo classe 2 in giallo nel grafico, rappresenta la porzione di suolo che è coperto da coltivi
+[3,] 3.856041e-06 0.05083419 #5 acqua verde classe 3 in verde nel grafico, rappresenta la porzione di suolo che è coperto da acqua
+#
+iguunsup2<-unsuperClass(igu11,nClasses=3)
+plot(iguunsup2$map,main="2011")
+freq(iguunsup2$map)
+ value  count
+[1,]     1 273745
+[2,]     2 444362
+[3,]     3  59893
+s2<-273745+444362+59893
+prop2<-freq(iguunsup2$map)/s2
 prop2
             value      count
-[1,] 1.096491e-06 0.29838816 #30% coltivi bianco
-[2,] 2.192982e-06 0.03210197 #3% acqua giallo
-[3,] 3.289474e-06 0.66950987 #67% foresta verde
-#frequenze per l'immagine del 2021
-freq(forunsup20213$map)
-    value  count
-[1,]     1 407324 #classe 1 coltivi bianco
-[2,]     2 371609 #classe 2 foresta giallo
-[3,]     3 133067 #classe 3 acqua verde
-s3<-407324+371609+133067
-s3
-[1] 912000
-#proporzioni per il 2021
-prop3<-freq(forunsup20213$map)/s3
-prop3
-            value     count
-[1,] 1.096491e-06 0.4466272 #45% coltivi bianco
-[2,] 2.192982e-06 0.4074660 #41% foresta giallo
-[3,] 3.289474e-06 0.1459068 #16% acqua verde
-...............................................................................
+[1,] 1.285347e-06 0.351857330 #35 coltivi bianco classe 1 in bianco nel grafico, rappresenta la porzione di suolo che è coperto da coltivi
+[2,] 2.570694e-06 0.57115938 #57 foresta gialla classe 2 in giallo nel grafico, rappresenta la porzione di suolo che è coperto da foresta
+[3,] 3.856041e-06 0.07698329 #8 acqua verde classe 3 in verde nel grafico, rappresenta la porzione di suolo che è coperto da acqua
+ 
+#frequenze
+# nomino le classi di copertura
 cover<-c("Forest", "Agriculture","Water")
-percentage_1973<-c(79.35,16.88,3.75)
-percentage_1998<-c(66.95,29.83,3.21)
-percentage_2021<-c(40.74,44.66,14.59)
-percentages<-data.frame(cover, percentage_1973,percentage_1998,percentage_2021)
+#fisso i valori di percentuali di ogni classe e attribuisco un nome
+percentages_73<-c(0.74,0.20,0.05)
+percentages_11<-c(0.57,0.35,0.07)
+#creo un dataframe, ossia una tabella dove i valori corrispondono alle 3 classi di copertura
+percentages<-data.frame(cover, percentages_73,percentages_11)
 percentages
-        cover percentage_1973 percentage_1998 percentage_2021
-1      Forest           79.35           66.95           40.74
-2 Agriculture           16.88           29.83           44.66
-3       Water            3.75            3.21           14.59
-ggplot(percentages,aes(x=cover,y=percentage_1973,color=cover))+geom_bar(stat="identity", fill="white")
-ggplot(percentages,aes(x=cover,y=percentage_1998,color=cover))+geom_bar(stat="identity", fill="white")
-ggplot(percentages,aes(x=cover,y=percentage_2021,color=cover))+geom_bar(stat="identity", fill="white")
-g1<-ggplot(percentages,aes(x=cover,y=percentage_1973,color=cover))+geom_bar(stat="identity", fill="white")
-g2<-ggplot(percentages,aes(x=cover,y=percentage_1998,color=cover))+geom_bar(stat="identity", fill="white")
-g3<-ggplot(percentages,aes(x=cover,y=percentage_2021,color=cover))+geom_bar(stat="identity", fill="white")
-#diamo un nome ad ogni grafico per inserirlo in un grafico più grande unificante tutti e 3
-grid.arrange(g1,g2,g3,nrow=1)
-#grafico raggruppa tutte e 3 le immagini
+        #cover percentages_73 percentages_11
+#1      Forest           0.74           0.35
+#2 Agriculture           0.20           0.57
+#3       Water           0.05           0.07
 
-#3.NDVI
-
-
-
-
-
+#restituisco graficamente il dataframe tramite ggplot, creando un istogramma
+ggplot(percentages,aes(x=cover,y=percentages_73,color=cover))+geom_bar(stat="identity", fill="white")+ylim(0,0.8)
+ggplot(percentages,aes(x=cover,y=percentages_11,color=cover))+geom_bar(stat="identity", fill="white")+ylim(0,0.8)
+#attribuisco un nome più semplice ai due istogrammi appena creati
+p1<-ggplot(percentages,aes(x=cover,y=percentages_73,color=cover))+geom_bar(stat="identity", fill="white")+ ylim(0,0.8)
+p2<-ggplot(percentages,aes(x=cover,y=percentages_11,color=cover))+geom_bar(stat="identity", fill="white")+ylim(0,0.8)
+#tramite la funzione grid.arrange creo un grafico unendo i due istogrammi
+grid.arrange(p1, p2, nrow=
