@@ -38,9 +38,10 @@ import<- lapply(iguaz, raster)
 #correzione extent così le immagini hanno la stessa estensione
 import[[1]]<- crop(import[[1]], extent(extent(import[[2]])))
 #faccio uno stack di quello che ho ottenuto precedentemente
-TGr<-stack(import)
+Ig<-stack(import)
 #uso la funzione levelplot
-levelplot(TGr, main="Deforestation in Iguazù National Park", names.attr=c("1973","2011"))
+levelplot(Ig, main="Variazione della 
+copertura forestale nel tempo", names.attr=c("1973","2011"))
 
 #PCA/VARIABILITY...............................................................................
 #Eseguo un'analisi delle componenti principali per vedere quale mi descrive meglio la variabilità
