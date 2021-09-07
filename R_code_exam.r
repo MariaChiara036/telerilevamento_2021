@@ -6,18 +6,18 @@
 #Il primo step su R è richiamare i pacchetti necessari per svolgere le analisi
 #pacchetto attraverso cui è possibile eseguire le funzioni base di R come calcolare o analizzare dati, sia Raster che vettoriali.
 library(raster)
-#pacchetto RStoolbox permette di eseguire plot come levelplot e indagare la variabilità dei dati
+#pacchetto RStoolbox permette analisi di monitoraggio come il calcolo degli indici spettrali, la classificazione non supervisionata
 library(RStoolbox)
-#pacchetto gridExtra
+#pacchetto che permette di elaborare plot complessi e personalizzati come ggplot, utile nella manipolazione grafica
 library(gridExtra)
-#pacchetto rasterVis permette
+#pacchetto rasterVis incrementa i metodi di visualizzazione delle immagini, ad esempio permette di elaborare levelplots
 library(rasterVis)
 #pacchetto ggplot è molto utile per fare plot personalizzati e complessi 
 library(ggplot2)
 
-#inserisco l'immagine su R come rasterBrick
+#inserisco l'immagine su R come rasterBrick, ossia includendo tutti i vari layer dell'immagine(bande)
 igu73<-brick("igu_1973.png")
-#inserisco l'immagine su R come rasterBrick
+#inserisco l'immagine su R come rasterBrick, ossia includendo tutti i vari layer dell'immagine(bande)
 igu11<-brick("igu_2011.png")
 #correzione extent
 igu73<-crop(igu73,igu11)
@@ -28,10 +28,12 @@ plotRGB(igu73,2,3,1,stretch="lin")
 plotRGB(igu11,1,2,3,stretch="lin")
 
 #TIME SERIES...................................................................................
+#Studio di time series è utile per confrontare due o più immagini nel corso degli anni
+
 #creo una lista di files contente le due immagini così da applicare le funzioni in modo univoco direttamente sulla lista
 #creo una lista contente le due immagini precedentemente caricate, R raccoglie dalla mia working directory tutti quei file che hanno come pattern comune "igu"
 iguaz<-list.files(pattern="igu")
-##applico alla mia lista la funzione raster tramite la funzione lapply
+#applico alla mia lista la funzione raster tramite la funzione lapply
 import<- lapply(iguaz, raster)
 #correzione extent così le immagini hanno la stessa estensione
 import[[1]]<- crop(import[[1]], extent(extent(import[[2]])))
@@ -41,14 +43,17 @@ TGr<-stack(import)
 levelplot(TGr, main="Deforestation in Iguazù National Park", names.attr=c("1973","2011"))
 
 #PCA/VARIABILITY...............................................................................
-#con la funzione rasterPCA eseguo una analisi delle componenti principali dell'immagine del 1973
+#Eseguo un'analisi delle componenti principali per vedere quale mi descrive meglio la variabilità
+#Successivamente calcolo la deviazione standard della componente più rappresentativa in modo da visualizzare ancora di più dove si concentra la variabilità
+
+#con la funzione rasterPCA eseguo un'analisi delle componenti principali dell'immagine del 1973
 igu73PCA<-rasterPCA(igu73)
 #carico il modello della PCA, estrapolato dalla PCA appena prodotta
 summary(igu73PCA$model)
 #Importance of components:
                            #Comp.1     Comp.2      Comp.3 Comp.4
 #Standard deviation     72.6780720 35.6010851 14.32043804      0
-#Proportion of Variance  0.7819991  0.1876402  0.03036072      0 prima comp 78%, seconda 19%,terza 3%, quarta 0.
+#Proportion of Variance  0.7819991  0.1876402  0.03036072      0 prima componente 78%, seconda 19%,terza 3%, quarta 0.
 #Cumulative Proportion   0.7819991  0.9696393  1.00000000      1
 #plot delle 4 componenti principali dell'immagine del 1973
 plot(igu73PCA$map)
@@ -73,7 +78,7 @@ summary(igu11PCA$model)
 #Importance of components:
                            #Comp.1     Comp.2     Comp.3 Comp.4
 #Standard deviation     86.0786339 62.6616126 13.4483248      0
-#Proportion of Variance  0.6433635  0.3409328  0.0157037      0 prima comp 64%, 34%,0,15%, 0.
+#Proportion of Variance  0.6433635  0.3409328  0.0157037      0 prima componente 64%, seconda 34%, terza 2%, 0.
 #Cumulative Proportion   0.6433635  0.9842963  1.0000000      1
 #plot delle quattro componenti dell'immagine
 plot(igu11PCA$map)
@@ -89,6 +94,7 @@ ggplot()+ geom_raster(pc1.sd, mapping = aes(x = x, y = y,
 fill = layer))+scale_fill_viridis(option="magma")
 
 #NDVI................................................................................
+#L'indice NDVI è un indice molto utile per valutare la condizione della vegetazione. É molto utile in questo caso per sottolineare il suo mutamento in condizioni di deforestazione
 
 #immagine 1973
 #tramite la funzione spectralIndices R mi calcola tutti gli indici possibili ottenibili dalle bande che io inserisco per la mia immagine
@@ -106,6 +112,8 @@ plot(vi2)
 plot(vi2$NDVI,main="NDVI 2011")
 
 #LAND COVER..............................................................................
+#Lo studio di copertura del suolo è utile per vedere com'è utilizzato il suolo e visualizzare le sue componenti.
+#Su R si può comodamente utilizzare la classificazione non supervisionata per raggruppare pixel con valori simili di modo poi da assegnare delle categorie
 
 #studio la copertura del suolo tramite la classificazione non supervisionata che mi classifica i pixel dell'immagine raggruppano insieme quelli che sono più simili tra loro.
 Il fatto che sia non supervisionata significa che il training set è scelto in modo random da R
@@ -157,6 +165,7 @@ percentages
 #3       Water           0.05           0.07
 
 #restituisco graficamente il dataframe tramite ggplot, creando un istogramma
+#scelgo cosa posizionare sull'asse x ed y con il paramentro "aes" e il tipo di grafico con "geom_bar", infine tramite "ylim" decido la scala da utilizzare
 ggplot(percentages,aes(x=cover,y=percentages_73,color=cover))+geom_bar(stat="identity", fill="white")+ylim(0,0.8)
 ggplot(percentages,aes(x=cover,y=percentages_11,color=cover))+geom_bar(stat="identity", fill="white")+ylim(0,0.8)
 #attribuisco un nome più semplice ai due istogrammi appena creati
