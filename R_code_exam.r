@@ -39,8 +39,11 @@ import<- lapply(iguaz, raster)
 import[[1]]<- crop(import[[1]], extent(extent(import[[2]])))
 #faccio uno stack di quello che ho ottenuto precedentemente
 Ig<-stack(import)
-#uso la funzione levelplot
-levelplot(Ig, main="Variazione della copertura forestale nel tempo", names.attr=c("1973","2011"))
+#creo una palette di colori
+cl <- colorRampPalette(c("darkgreen","green","yellow",
+"white"))(100)
+#funzione levelplot
+levelplot(Ig,col.regions=cl main="Variazione della copertura forestale nel tempo", names.attr=c("1973","2011"))
 
 #PCA/VARIABILITY...............................................................................
 #Eseguo un'analisi delle componenti principali per vedere quale mi descrive meglio la variabilità
