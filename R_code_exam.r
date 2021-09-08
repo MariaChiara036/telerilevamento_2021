@@ -60,7 +60,7 @@ plot(igu73PCA$map)
 #semplifico dando alla prima componente un nome più veloce
 pc1<-igu73PCA$map$PC1
 #calcolo deviazione standard della prima componente, che in questo caso è quella che meglio descrive la variabilità dell'immagine.
-#La deviazione standard indagare ulterioremente la variabilità, in questo caso la variabilità della PC1
+#La deviazione standard indaga ulterioremente la variabilità, in questo caso la variabilità della PC1
 #funzione focal permette di fare svariate statistiche, in questo caso viene calcolata la dev. standard. Il calcolo è effettuato su una matrice di 9 pixel totali
 pc1sd<-focal(pc1, w=matrix(1/9, nrow=3,ncol=3), fun=sd)
 #creo una palette di colori per il plot successivo
