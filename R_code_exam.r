@@ -172,5 +172,5 @@ ggplot(percentages,aes(x=cover,y=percentages_11,color=cover))+geom_bar(stat="ide
 #attribuisco un nome più semplice ai due grafici appena creati
 p1<-ggplot(percentages,aes(x=cover,y=percentages_73,color=cover))+geom_bar(stat="identity", fill="white")+ ylim(0,0.8)
 p2<-ggplot(percentages,aes(x=cover,y=percentages_11,color=cover))+geom_bar(stat="identity", fill="white")+ylim(0,0.8)
-#tramite la funzione grid.arrange creo un grafico unendo i grafici a barre
+#tramite la funzione "grid.arrange" creo un grafico unendo i grafici a barre
 grid.arrange(p1, p2, nrow=1)
