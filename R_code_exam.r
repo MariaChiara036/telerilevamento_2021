@@ -40,8 +40,7 @@ import[[1]]<- crop(import[[1]], extent(extent(import[[2]])))
 #faccio uno stack di quello che ho ottenuto precedentemente
 Ig<-stack(import)
 #uso la funzione levelplot
-levelplot(Ig, main="Variazione della 
-copertura forestale nel tempo", names.attr=c("1973","2011"))
+levelplot(Ig, main="Variazione della copertura forestale nel tempo", names.attr=c("1973","2011"))
 
 #PCA/VARIABILITY...............................................................................
 #Eseguo un'analisi delle componenti principali per vedere quale mi descrive meglio la variabilità
@@ -125,33 +124,34 @@ plot(iguunsup1$map,main="1973")
 # calcolo le frequenza, ossia la percentuale dei pixel per ogni classe
 req(iguunsup1$map)
      value  count
-[1,]     1 576140
-[2,]     2 162311
-[3,]     3  39549
+#[1,]     1 576140
+#[2,]     2 162311
+#[3,]     3  39549
 s1<-576140+162311+39549
 prop1<-freq(iguunsup1$map)/s1
 prop1
             value      count
-[1,] 1.285347e-06 0.74053985 #74 foresta bianco classe 1 in bianco nel grafico, rappresenta la porzione di suolo che è coperto da foresta
-[2,] 2.570694e-06 0.20862596 #21 coltivi giallo classe 2 in giallo nel grafico, rappresenta la porzione di suolo che è coperto da coltivi
-[3,] 3.856041e-06 0.05083419 #5 acqua verde classe 3 in verde nel grafico, rappresenta la porzione di suolo che è coperto da acqua
-#
+#[1,] 1.285347e-06 0.74053985 #74 foresta bianco classe 1 in bianco nel grafico, rappresenta la porzione di suolo che è coperto da foresta
+#[2,] 2.570694e-06 0.20862596 #21 coltivi giallo classe 2 in giallo nel grafico, rappresenta la porzione di suolo che è coperto da coltivi
+#[3,] 3.856041e-06 0.05083419 #5 acqua verde classe 3 in verde nel grafico, rappresenta la porzione di suolo che è coperto da acqua
+#calcolo 3 classi tramite la funzione "unsuperClass"
 iguunsup2<-unsuperClass(igu11,nClasses=3)
 plot(iguunsup2$map,main="2011")
+#calcolo le frequenze per le classi nell'immagine 2011
 freq(iguunsup2$map)
  value  count
-[1,]     1 273745
-[2,]     2 444362
-[3,]     3  59893
+#[1,]     1 273745
+#[2,]     2 444362
+#[3,]     3  59893
 s2<-273745+444362+59893
 prop2<-freq(iguunsup2$map)/s2
 prop2
             value      count
-[1,] 1.285347e-06 0.351857330 #35 coltivi bianco classe 1 in bianco nel grafico, rappresenta la porzione di suolo che è coperto da coltivi
-[2,] 2.570694e-06 0.57115938 #57 foresta gialla classe 2 in giallo nel grafico, rappresenta la porzione di suolo che è coperto da foresta
-[3,] 3.856041e-06 0.07698329 #8 acqua verde classe 3 in verde nel grafico, rappresenta la porzione di suolo che è coperto da acqua
+#[1,] 1.285347e-06 0.351857330 #35 coltivi bianco classe 1 in bianco nel grafico, rappresenta la porzione di suolo che è coperto da coltivi
+#[2,] 2.570694e-06 0.57115938 #57 foresta gialla classe 2 in giallo nel grafico, rappresenta la porzione di suolo che è coperto da foresta
+#[3,] 3.856041e-06 0.07698329 #8 acqua verde classe 3 in verde nel grafico, rappresenta la porzione di suolo che è coperto da acqua
  
-#frequenze
+#dataframe
 # nomino le classi di copertura
 cover<-c("Forest", "Agriculture","Water")
 #fisso i valori di percentuali di ogni classe e attribuisco un nome
@@ -165,12 +165,12 @@ percentages
 #2 Agriculture           0.20           0.57
 #3       Water           0.05           0.07
 
-#restituisco graficamente il dataframe tramite ggplot, creando un istogramma
+#restituisco graficamente il dataframe tramite ggplot, creando un grafico a barre
 #scelgo cosa posizionare sull'asse x ed y con il paramentro "aes" e il tipo di grafico con "geom_bar", infine tramite "ylim" decido la scala da utilizzare
 ggplot(percentages,aes(x=cover,y=percentages_73,color=cover))+geom_bar(stat="identity", fill="white")+ylim(0,0.8)
 ggplot(percentages,aes(x=cover,y=percentages_11,color=cover))+geom_bar(stat="identity", fill="white")+ylim(0,0.8)
-#attribuisco un nome più semplice ai due istogrammi appena creati
+#attribuisco un nome più semplice ai due grafici appena creati
 p1<-ggplot(percentages,aes(x=cover,y=percentages_73,color=cover))+geom_bar(stat="identity", fill="white")+ ylim(0,0.8)
 p2<-ggplot(percentages,aes(x=cover,y=percentages_11,color=cover))+geom_bar(stat="identity", fill="white")+ylim(0,0.8)
-#tramite la funzione grid.arrange creo un grafico unendo i due istogrammi
-grid.arrange(p1, p2, nrow=
+#tramite la funzione grid.arrange creo un grafico unendo i grafici a barre
+grid.arrange(p1, p2, nrow=1)
